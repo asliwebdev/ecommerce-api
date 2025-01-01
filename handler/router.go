@@ -17,7 +17,17 @@ func NewHandler(userService *service.UserService) *Handler {
 }
 
 func Run(h *Handler) *gin.Engine {
-	r := gin.Default()
+	router := gin.Default()
 
-	return r
+	// USER ROUTES
+	userRoutes := router.Group("/users")
+	{
+		userRoutes.POST("/", h.CreateUser)
+		userRoutes.GET("/", h.GetAllUsers)
+		userRoutes.GET("/:id", h.GetUserById)
+		userRoutes.PUT("/:id", h.UpdateUser)
+		userRoutes.DELETE("/:id", h.DeleteUser)
+	}
+
+	return router
 }
