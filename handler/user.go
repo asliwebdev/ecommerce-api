@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"expensify/models"
+	"ecommerce/models"
 
 	"github.com/gin-gonic/gin"
 )

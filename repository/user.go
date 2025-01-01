@@ -3,7 +3,7 @@ package repository
 import (
 	"database/sql"
 
-	"expensify/models"
+	"ecommerce/models"
 
 	"github.com/google/uuid"
 )

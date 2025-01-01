@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"expensify/service"
+	"ecommerce/service"
 
 	"github.com/gin-gonic/gin"
 )

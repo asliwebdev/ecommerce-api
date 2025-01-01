@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 
-	"expensify/handler"
-	"expensify/postgres"
-	"expensify/repository"
-	"expensify/service"
+	"ecommerce/handler"
+	"ecommerce/postgres"
+	"ecommerce/repository"
+	"ecommerce/service"
 )
 
 func main() {
