@@ -7,12 +7,14 @@ import (
 )
 
 type Handler struct {
-	userService *service.UserService
+	userService    *service.UserService
+	productService *service.ProductService
 }
 
-func NewHandler(userService *service.UserService) *Handler {
+func NewHandler(userService *service.UserService, productService *service.ProductService) *Handler {
 	return &Handler{
-		userService: userService,
+		userService:    userService,
+		productService: productService,
 	}
 }
 
@@ -27,6 +29,16 @@ func Run(h *Handler) *gin.Engine {
 		userRoutes.GET("/:id", h.GetUserById)
 		userRoutes.PUT("/:id", h.UpdateUser)
 		userRoutes.DELETE("/:id", h.DeleteUser)
+	}
+
+	// PRODUCT ROUTES
+	productRoutes := router.Group("/products")
+	{
+		productRoutes.POST("/", h.CreateProduct)
+		productRoutes.GET("/", h.GetAllProducts)
+		productRoutes.GET("/:id", h.GetProductById)
+		productRoutes.PUT("/:id", h.UpdateProduct)
+		productRoutes.DELETE("/:id", h.DeleteProduct)
 	}
 
 	return router

@@ -19,7 +19,10 @@ func main() {
 	userRepo := repository.NewUserRepo(db)
 	userService := service.NewUserService(userRepo)
 
-	h := handler.NewHandler(userService)
+	productRepo := repository.NewProductRepo(db)
+	productService := service.NewProductService(productRepo)
+
+	h := handler.NewHandler(userService, productService)
 
 	r := handler.Run(h)
 
