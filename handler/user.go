@@ -30,6 +30,10 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 
 func (h *Handler) GetUserById(ctx *gin.Context) {
 	id := ctx.Param("id")
+	if id == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "User Id is required"})
+		return
+	}
 
 	user, err := h.userService.GetUserById(id)
 	if err != nil {
@@ -57,6 +61,10 @@ func (h *Handler) GetAllUsers(ctx *gin.Context) {
 
 func (h *Handler) UpdateUser(ctx *gin.Context) {
 	id := ctx.Param("id")
+	if id == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "User Id is required"})
+		return
+	}
 
 	user := models.User{}
 	if err := ctx.ShouldBindJSON(&user); err != nil {
@@ -79,6 +87,10 @@ func (h *Handler) UpdateUser(ctx *gin.Context) {
 
 func (h *Handler) DeleteUser(ctx *gin.Context) {
 	id := ctx.Param("id")
+	if id == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "User Id is required"})
+		return
+	}
 
 	err := h.userService.DeleteUser(id)
 	if err != nil {

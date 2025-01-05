@@ -7,16 +7,20 @@ import (
 )
 
 type Handler struct {
-	userService    *service.UserService
-	productService *service.ProductService
-	cartService    *service.CartService
+	userService     *service.UserService
+	productService  *service.ProductService
+	cartService     *service.CartService
+	checkoutService *service.CheckoutService
+	orderService    *service.OrderService
 }
 
-func NewHandler(userService *service.UserService, productService *service.ProductService, cartService *service.CartService) *Handler {
+func NewHandler(userService *service.UserService, productService *service.ProductService, cartService *service.CartService, checkoutService *service.CheckoutService, orderService *service.OrderService) *Handler {
 	return &Handler{
-		userService:    userService,
-		productService: productService,
-		cartService:    cartService,
+		userService:     userService,
+		productService:  productService,
+		cartService:     cartService,
+		checkoutService: checkoutService,
+		orderService:    orderService,
 	}
 }
 
@@ -51,6 +55,18 @@ func Run(h *Handler) *gin.Engine {
 		cartRoutes.DELETE("/remove/:userId/:productId", h.RemoveProductFromCart)
 		cartRoutes.DELETE("/clear/:userId", h.ClearCart)
 		cartRoutes.PUT("/", h.UpdateProductQuantity)
+	}
+
+	// CHECKOUT ROUTES
+	router.POST("/checkout", h.Checkout)
+
+	// ORDER ROUTES
+	orderRoutes := router.Group("/orders")
+	{
+		orderRoutes.GET("/user/:userId", h.GetAllOrders)
+		orderRoutes.GET("/:orderId", h.GetOrderById)
+		orderRoutes.PUT("/", h.UpdateOrder)
+		orderRoutes.DELETE("/:orderId", h.DeleteOrder)
 	}
 
 	return router

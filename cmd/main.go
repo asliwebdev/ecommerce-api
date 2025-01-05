@@ -25,7 +25,12 @@ func main() {
 	cartRepo := repository.NewCartRepo(db)
 	cartService := service.NewCartService(cartRepo)
 
-	h := handler.NewHandler(userService, productService, cartService)
+	orderRepo := repository.NewOrderRepo(db)
+	orderService := service.NewOrderService(orderRepo)
+
+	checkoutService := service.NewCheckoutService(cartRepo, orderRepo, productRepo)
+
+	h := handler.NewHandler(userService, productService, cartService, checkoutService, orderService)
 
 	r := handler.Run(h)
 
