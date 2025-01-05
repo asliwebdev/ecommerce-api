@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"ecommerce/middleware"
+	"ecommerce/repository"
 	"ecommerce/service"
 
 	"github.com/gin-gonic/gin"
@@ -24,8 +26,10 @@ func NewHandler(userService *service.UserService, productService *service.Produc
 	}
 }
 
-func Run(h *Handler) *gin.Engine {
+func Run(h *Handler, userRepo *repository.UserRepo) *gin.Engine {
 	router := gin.Default()
+
+	router.Use(middleware.SkipForRoute("/users", "POST", middleware.BasicAuth(userRepo)))
 
 	// USER ROUTES
 	userRoutes := router.Group("/users")

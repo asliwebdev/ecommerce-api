@@ -32,7 +32,7 @@ func main() {
 
 	h := handler.NewHandler(userService, productService, cartService, checkoutService, orderService)
 
-	r := handler.Run(h)
+	r := handler.Run(h, userRepo)
 
 	err = r.Run(":8080")
 	if err != nil {

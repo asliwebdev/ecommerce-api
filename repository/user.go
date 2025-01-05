@@ -26,9 +26,9 @@ func (u *UserRepo) CreateUser(user models.User) error {
 	}
 	defer tx.Commit()
 
-	_, err = tx.Exec(`INSERT INTO users (id, name, role, email)
-	 VALUES ($1, $2, $3, $4)`,
-		id, user.Name, user.Role, user.Email)
+	_, err = tx.Exec(`INSERT INTO users (id, name, role, email, password)
+	 VALUES ($1, $2, $3, $4, $5)`,
+		id, user.Name, user.Role, user.Email, user.Password)
 	if err != nil {
 		return err
 	}
