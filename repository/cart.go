@@ -17,25 +17,16 @@ func NewCartRepo(db *sql.DB) *CartRepository {
 }
 
 func (r *CartRepository) AddProductToCart(cart *models.AddProductRequest) error {
-	var existingQuantity int
-	err := r.DB.QueryRow("SELECT quantity FROM carts WHERE user_id = $1 AND product_id = $2", cart.UserId, cart.ProductId).Scan(&existingQuantity)
+	cartId := uuid.NewString()
+	_, err := r.DB.Exec(`
+        INSERT INTO carts (id, user_id, product_id, quantity) 
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id, product_id) 
+        DO UPDATE SET quantity = carts.quantity + $4
+    `, cartId, cart.UserId, cart.ProductId, cart.Quantity)
 
-	if err == sql.ErrNoRows {
-		cartId := uuid.NewString()
-		_, err := r.DB.Exec("INSERT INTO carts (id, user_id, product_id, quantity) VALUES ($1, $2, $3, $4)",
-			cartId, cart.UserId, cart.ProductId, cart.Quantity)
-		if err != nil {
-			return fmt.Errorf("error adding product %s to user %s's cart: %w", cart.ProductId, cart.UserId, err)
-		}
-	} else if err != nil {
-		return fmt.Errorf("error checking if product exists in cart for user %s: %w", cart.UserId, err)
-	} else {
-		newQuantity := existingQuantity + cart.Quantity
-		_, err := r.DB.Exec("UPDATE carts SET quantity = $1 WHERE user_id = $2 AND product_id = $3",
-			newQuantity, cart.UserId, cart.ProductId)
-		if err != nil {
-			return fmt.Errorf("error updating quantity for product %s in user %s's cart: %w", cart.ProductId, cart.UserId, err)
-		}
+	if err != nil {
+		return fmt.Errorf("error adding/updating product %s in user %s's cart: %w", cart.ProductId, cart.UserId, err)
 	}
 
 	return nil

@@ -25,7 +25,8 @@ CREATE TABLE carts (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     quantity INT NOT NULL CHECK (quantity > 0),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, product_id)
 );
 
 -- Create Orders Table

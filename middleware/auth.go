@@ -45,13 +45,3 @@ func BasicAuth(userRepo *repository.UserRepo) gin.HandlerFunc {
 		c.Next()
 	}
 }
-
-func SkipForRoute(path string, method string, middleware gin.HandlerFunc) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if c.Request.URL.Path == path && c.Request.Method == method {
-			c.Next()
-			return
-		}
-		middleware(c)
-	}
-}

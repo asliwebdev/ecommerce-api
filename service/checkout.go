@@ -4,6 +4,7 @@ import (
 	"ecommerce/models"
 	"ecommerce/repository"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -40,13 +41,28 @@ func (s *CheckoutService) Checkout(req models.CheckoutRequest) (models.CheckoutR
 		return models.CheckoutResponse{}, ErrCartIsEmpty
 	}
 
+	productIds := make([]string, len(cartItems))
+	for i, cartItem := range cartItems {
+		productIds[i] = cartItem.ProductId
+	}
+
+	products, err := s.productRepo.GetProductsByIds(productIds)
+	if err != nil {
+		return models.CheckoutResponse{}, ErrFailedToFetchProduct
+	}
+
+	productMap := make(map[string]models.Product)
+	for _, product := range products {
+		productMap[product.ID] = product
+	}
+
 	var totalPrice float64
-	orderItems := []models.OrderItem{}
+	orderItems := make([]models.OrderItem, 0, len(cartItems))
 
 	for _, cartItem := range cartItems {
-		product, err := s.productRepo.GetProductById(cartItem.ProductId)
-		if err != nil {
-			return models.CheckoutResponse{}, ErrFailedToFetchProduct
+		product, exists := productMap[cartItem.ProductId]
+		if !exists {
+			return models.CheckoutResponse{}, fmt.Errorf("product %s not found", cartItem.ProductId)
 		}
 
 		totalPrice += float64(cartItem.Quantity) * product.Price
@@ -68,8 +84,8 @@ func (s *CheckoutService) Checkout(req models.CheckoutRequest) (models.CheckoutR
 		PaymentMethod:   req.PaymentMethod,
 		OrderItems:      orderItems,
 	}
-	err = s.orderRepo.CreateOrder(orderParams)
-	if err != nil {
+
+	if err := s.orderRepo.CreateOrder(orderParams); err != nil {
 		return models.CheckoutResponse{}, ErrFailedToCreateOrder
 	}
 

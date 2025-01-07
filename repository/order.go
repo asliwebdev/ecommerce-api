@@ -103,22 +103,16 @@ func (r *OrderRepository) GetAllOrders(userId string) ([]models.Order, error) {
 }
 
 func (r *OrderRepository) UpdateOrder(params models.UpdateOrderRequest) error {
-	tx, err := r.DB.Begin()
-	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
-	}
-
-	_, err = tx.Exec(
+	_, err := r.DB.Exec(
 		`UPDATE orders 
 		 SET total_price = $1, status = $2, shipping_address = $3, payment_method = $4, updated_at = CURRENT_TIMESTAMP 
 		 WHERE id = $5`,
 		params.TotalPrice, params.Status, params.ShippingAddress, params.PaymentMethod, params.OrderId,
 	)
 	if err != nil {
-		tx.Rollback()
 		return fmt.Errorf("failed to update order: %w", err)
 	}
-	return tx.Commit()
+	return nil
 }
 
 func (r *OrderRepository) DeleteOrder(orderId string) error {

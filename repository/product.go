@@ -7,6 +7,7 @@ import (
 	"ecommerce/models"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type ProductRepository struct {
@@ -20,19 +21,13 @@ func NewProductRepo(db *sql.DB) *ProductRepository {
 func (p *ProductRepository) CreateProduct(product *models.Product) error {
 	id := uuid.NewString()
 
-	tx, err := p.DB.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	_, err = tx.Exec("INSERT INTO products (id, name, description, price, stock) VALUES ($1, $2, $3, $4, $5)",
+	_, err := p.DB.Exec("INSERT INTO products (id, name, description, price, stock) VALUES ($1, $2, $3, $4, $5)",
 		id, product.Name, product.Description, product.Price, product.Stock)
 	if err != nil {
 		return fmt.Errorf("error creating product: %w", err)
 	}
 
-	return tx.Commit()
+	return nil
 }
 
 func (p *ProductRepository) GetAllProducts() ([]models.Product, error) {
@@ -71,35 +66,45 @@ func (p *ProductRepository) GetProductById(id string) (*models.Product, error) {
 	return &product, nil
 }
 
-func (p *ProductRepository) UpdateProduct(id string, product *models.Product) error {
-	tx, err := p.DB.Begin()
+func (r *ProductRepository) GetProductsByIds(ids []string) ([]models.Product, error) {
+	query := `
+		SELECT id, name, description, price, stock, created_at, updated_at 
+		FROM products 
+		WHERE id = ANY($1)`
+	rows, err := r.DB.Query(query, pq.Array(ids))
 	if err != nil {
-		return fmt.Errorf("error starting transaction: %w", err)
+		return nil, err
 	}
-	defer tx.Rollback()
+	defer rows.Close()
 
-	_, err = tx.Exec("UPDATE products SET name = $1, description = $2, price = $3, stock = $4, updated_at = $5 WHERE id = $6",
+	var products []models.Product
+	for rows.Next() {
+		var product models.Product
+		if err := rows.Scan(&product.ID, &product.Name, &product.Price, &product.Stock); err != nil {
+			return nil, err
+		}
+		products = append(products, product)
+	}
+	return products, nil
+}
+
+func (p *ProductRepository) UpdateProduct(id string, product *models.Product) error {
+	_, err := p.DB.Exec("UPDATE products SET name = $1, description = $2, price = $3, stock = $4, updated_at = $5 WHERE id = $6",
 		product.Name, product.Description, product.Price, product.Stock, product.UpdatedAt, id)
 	if err != nil {
 		return fmt.Errorf("error updating product: %w", err)
 	}
 
-	return tx.Commit()
+	return nil
 }
 
 func (p *ProductRepository) DeleteProduct(id string) error {
-	tx, err := p.DB.Begin()
-	if err != nil {
-		return fmt.Errorf("error starting transaction: %w", err)
-	}
-	defer tx.Rollback()
-
-	_, err = tx.Exec("DELETE FROM products WHERE id = $1", id)
+	_, err := p.DB.Exec("DELETE FROM products WHERE id = $1", id)
 	if err != nil {
 		return fmt.Errorf("error deleting product: %w", err)
 	}
 
-	return tx.Commit()
+	return nil
 }
 
 func (p *ProductRepository) ProductExists(productId string) (bool, error) {

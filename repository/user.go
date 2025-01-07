@@ -20,13 +20,7 @@ func NewUserRepo(db *sql.DB) *UserRepo {
 func (u *UserRepo) CreateUser(user models.User) error {
 	id := uuid.NewString()
 
-	tx, err := u.DB.Begin()
-	if err != nil {
-		return fmt.Errorf("error starting transaction: %w", err)
-	}
-	defer tx.Commit()
-
-	_, err = tx.Exec(`INSERT INTO users (id, name, role, email, password)
+	_, err := u.DB.Exec(`INSERT INTO users (id, name, role, email, password)
 	 VALUES ($1, $2, $3, $4, $5)`,
 		id, user.Name, user.Role, user.Email, user.Password)
 	if err != nil {
@@ -86,13 +80,7 @@ func (u *UserRepo) UserExists(userId string) (bool, error) {
 }
 
 func (u *UserRepo) UpdateUser(id string, user models.User) error {
-	tx, err := u.DB.Begin()
-	if err != nil {
-		return fmt.Errorf("error starting transaction: %w", err)
-	}
-	defer tx.Commit()
-
-	_, err = tx.Exec(`UPDATE users SET name = $1, role = $2, email = $3, password = $4 WHERE id = $5`,
+	_, err := u.DB.Exec(`UPDATE users SET name = $1, role = $2, email = $3, password = $4 WHERE id = $5`,
 		user.Name, user.Role, user.Email, user.Password, id)
 	if err != nil {
 		return fmt.Errorf("error updating user: %w", err)
@@ -101,17 +89,10 @@ func (u *UserRepo) UpdateUser(id string, user models.User) error {
 }
 
 func (u *UserRepo) DeleteUser(userID string) error {
-	tx, err := u.DB.Begin()
-	if err != nil {
-		return err
-	}
-
-	defer tx.Rollback()
-
-	_, err = tx.Exec(`DELETE FROM users WHERE id = $1`, userID)
+	_, err := u.DB.Exec(`DELETE FROM users WHERE id = $1`, userID)
 	if err != nil {
 		return fmt.Errorf("error deleting user: %w", err)
 	}
 
-	return tx.Commit()
+	return nil
 }

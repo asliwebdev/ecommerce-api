@@ -29,12 +29,13 @@ func NewHandler(userService *service.UserService, productService *service.Produc
 func Run(h *Handler, userRepo *repository.UserRepo) *gin.Engine {
 	router := gin.Default()
 
-	router.Use(middleware.SkipForRoute("/users", "POST", middleware.BasicAuth(userRepo)))
+	router.POST("/users", h.CreateUser)
+
+	router.Use(middleware.BasicAuth(userRepo))
 
 	// USER ROUTES
 	userRoutes := router.Group("/users")
 	{
-		userRoutes.POST("/", h.CreateUser)
 		userRoutes.GET("/", h.GetAllUsers)
 		userRoutes.GET("/:id", h.GetUserById)
 		userRoutes.PUT("/:id", h.UpdateUser)
